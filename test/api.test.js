@@ -4,6 +4,7 @@ const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'bruni-'));
 process.env.BRUNI_DATA = dir; process.env.BRUNI_CONFIG = path.join(dir, 'none.json'); process.env.PORT = '0'; process.env.ADMIN_PIN = '246810';
 const S = require('../server.js');
 (async () => {
+  let cfg2;
   await S.start(0); const base = 'http://127.0.0.1:' + S.server.address().port;
   const j = async (p, o = {}) => { const r = await fetch(base + p, o); const t = await r.text(); let b; try { b = JSON.parse(t); } catch (e) { b = t; } return { s: r.status, b, h: r.headers }; };
   const P = (p, body, h = {}) => j(p, { method: 'POST', headers: { 'Content-Type': 'application/json', ...h }, body: JSON.stringify(body) });
@@ -64,6 +65,20 @@ const S = require('../server.js');
   const ms = (st, amt) => crypto.createHash('sha512').update(o3.id + '200' + amt + 'SB-KEY').digest('hex');
   r = await P('/api/webhook/midtrans', { order_id: o3.id, status_code: '200', gross_amount: o3.amount + '.00', signature_key: 'x', transaction_status: 'settlement' }); ok(r.s === 401, 'midtrans signature salah ditolak');
   r = await P('/api/webhook/midtrans', { order_id: o3.id, status_code: '200', gross_amount: o3.amount + '.00', signature_key: ms('', o3.amount + '.00'), transaction_status: 'settlement' }); ok(r.s === 200 && (await j('/api/orders/' + o3.id)).b.status === 'paid', 'midtrans settlement valid → lunas');
+  // pengaturan booth
+  r = await j('/api/admin/settings'); ok(r.s === 401, 'pengaturan tanpa login ditolak');
+  r = await j('/api/admin/settings', { headers: A }); ok(r.s === 200 && r.b.packages.length === 3 && r.b.defaultSecs === 3, 'pengaturan awal terbaca');
+  const base0 = r.b;
+  r = await P('/api/admin/settings', { ...base0, packages: [] }, A); ok(r.s === 400, 'pengaturan tanpa paket ditolak');
+  r = await P('/api/admin/settings', { ...base0, packages: [{ name: 'X', sessions: 1, price: 5 }] }, A); ok(r.s === 400, 'harga terlalu kecil ditolak');
+  r = await P('/api/admin/settings', { ...base0, defaultSecs: 7 }, A); ok(r.s === 400, 'hitung mundur di luar pilihan ditolak');
+  r = await P('/api/admin/settings', { ...base0, idleSeconds: 5 }, A); ok(r.s === 400, 'reset otomatis < 20 detik ditolak');
+  r = await P('/api/admin/settings', { brand: { name: 'Kopi <b>Uji</b>', tagline: 'Halo' }, packages: [{ id: 'a', name: 'Satu', sessions: 2, price: 20000, popular: true }, { id: 'a', name: 'Dua', sessions: 5, price: 50000, note: 'Hemat' }], defaultSecs: 5, idleSeconds: 60 }, A);
+  ok(r.s === 200 && r.b.packages.length === 2 && r.b.packages[0].id !== r.b.packages[1].id, 'pengaturan disimpan, id ganda dibuat unik');
+  cfg2 = (await j('/api/config')).b; ok(cfg2.packages.length === 2 && cfg2.defaultSecs === 5 && cfg2.kiosk.idleSeconds === 60 && !/[<>]/.test(cfg2.brand.name), 'config publik memakai pengaturan baru, tag HTML dibuang');
+  r = await P('/api/orders', { packageId: 'trio' }); ok(r.s === 400, 'paket lama tidak bisa dipesan lagi');
+  r = await P('/api/orders', { packageId: cfg2.packages[1].id }); ok(r.s === 201 && r.b.price === 50000, 'paket baru bisa dipesan dengan harga baru');
+  ok(JSON.parse(fs.readFileSync(path.join(dir, 'settings.json'), 'utf8')).defaultSecs === 5, 'settings.json tersimpan di folder data');
   // rate limit login
   let last; for (let i = 0; i < 7; i++) last = await P('/api/admin/login', { pin: 'salah' }); ok(last.s === 429, 'brute-force PIN dibatasi (429)');
   r = await j('/s/doesnotexist'); ok(r.s === 410, 'tautan tak dikenal → halaman berakhir (410)');
