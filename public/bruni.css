@@ -1,0 +1,57 @@
+/* ===== Bruni Coffee Lab — lapisan komersial (harga, bayar QRIS, QR unduh) ===== */
+.brand .bsub{padding-left:10px;border-left:1px solid var(--line);font:700 10px/1 var(--font);letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+@media (max-width:420px){.brand .bsub{display:none}}
+.hero h1{white-space:normal;font-size:clamp(34px,5.6vw,64px);line-height:1.04}
+html[data-theme=light] .sub,html[data-theme=light] .eyebrow,html[data-theme=light] .foot-brand .tag{color:#8A5A3B}
+html[data-theme=light] .tagc{color:#8A4A22}
+html[data-theme] .feat:nth-child(8){grid-column:span 2}
+@media (max-width:960px){html[data-theme] .feat:nth-child(8){grid-column:auto}}
+
+/* Harga */
+.prices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:40px}
+.price{position:relative;display:grid;gap:6px;align-content:start;padding:26px 24px;border:1px solid var(--line);border-radius:22px;background:var(--glass);transition:transform .3s var(--ease),border-color .25s,box-shadow .3s}
+.price:hover{transform:translateY(-4px);border-color:rgba(212,145,93,.6);box-shadow:0 18px 50px -22px rgba(212,145,93,.6)}
+.price.pop{border-color:rgba(212,145,93,.7);box-shadow:0 18px 50px -26px rgba(212,145,93,.8)}
+.ribbon{position:absolute;top:14px;right:14px;padding:3px 10px;border-radius:999px;background:linear-gradient(135deg,var(--neon),var(--neon2));color:#fff;font:800 10.5px var(--font);letter-spacing:.1em;text-transform:uppercase}
+.price h3{margin:0;font:800 18px var(--font)}
+.price .amt{font:800 38px/1.05 var(--font);letter-spacing:-.03em}
+.price .per{color:var(--muted);font-size:13px}
+.price .btn{margin-top:14px}
+.price-free{margin-top:36px;padding:22px 24px;border:1px dashed var(--line);border-radius:18px;color:var(--soft)}
+
+/* Bar status sesi di studio */
+.paybar{max-width:1120px;margin:0 auto;padding:0 24px 14px}
+@media (min-width:961px){.paybar{max-width:1440px}}
+@media (max-width:720px){.paybar{padding:0 16px 12px}}
+.pb{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;padding:14px 18px;border:1px solid var(--line);border-radius:18px;background:var(--glass);box-shadow:var(--sh)}
+.pb-info{display:flex;align-items:center;gap:12px;min-width:0}
+.pb-dot{width:10px;height:10px;border-radius:50%;background:#7b7283;flex:none}
+.pb.ok .pb-dot{background:#34e39a;box-shadow:0 0 10px #34e39a}
+.pb.wait .pb-dot{background:#ffb347;box-shadow:0 0 10px #ffb347;animation:blink 1.2s ease-in-out infinite}
+.pb b{display:block;font:800 15px var(--font)}
+.pb small{display:block;color:var(--muted);font-size:12.5px}
+.pb-act{display:flex;flex-wrap:wrap;gap:8px}
+code.tk{font:800 13px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.08em;color:var(--ink)}
+
+/* Modal beli / bayar */
+.buy h3,.payv h3,.okv h3,.shv h3{margin:0 0 4px;font:800 22px/1.2 var(--font);letter-spacing:-.01em}
+.pkgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}
+.pkg{position:relative;display:grid;gap:4px;justify-items:start;text-align:left;padding:18px 16px;border:1px solid var(--line);border-radius:18px;background:var(--glass);cursor:pointer;color:var(--ink);transition:transform .25s var(--ease),border-color .2s,box-shadow .25s}
+.pkg:hover,.pkg:focus-visible{border-color:var(--neon);transform:translateY(-3px);box-shadow:0 14px 36px -14px rgba(212,145,93,.6)}
+.pkg b{font:800 15px var(--font)}
+.pkg .p{font:800 24px/1.1 var(--font);letter-spacing:-.02em}
+.pkg small{color:var(--muted);font-size:12px}
+.pkg .ribbon{top:10px;right:10px;font-size:9.5px;padding:2px 8px}
+.payv,.okv,.shv{display:grid;justify-items:center;gap:12px;text-align:center}
+.qrisbox{padding:14px;background:#fff;border-radius:18px;box-shadow:0 0 0 1px rgba(212,145,93,.5),0 0 40px -8px rgba(212,145,93,.5)}
+.qrisbox canvas{display:block;width:min(264px,68vw);height:auto;image-rendering:pixelated}
+.amt-big{font:800 32px/1.1 var(--font);letter-spacing:-.02em}
+.timer{font:700 13px var(--font);color:var(--muted);font-variant-numeric:tabular-nums}
+.timer.late{color:#ff7a7a}
+.demo-b{max-width:40ch;padding:9px 12px;border-radius:12px;background:rgba(255,179,71,.14);border:1px solid rgba(255,179,71,.55);font-size:12.5px;line-height:1.45}
+.spin{display:inline-block;width:14px;height:14px;margin-right:8px;vertical-align:-2px;border:2px solid var(--line);border-top-color:var(--neon);border-radius:50%;animation:spn 1s linear infinite}
+@keyframes spn{to{transform:rotate(360deg)}}
+.tokbig{font:800 clamp(22px,6vw,32px)/1.1 ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em;padding:14px 20px;border-radius:16px;border:1px dashed var(--neon);background:var(--accent-s);user-select:all}
+.errl{margin:0;min-height:1.3em;color:#ff7a7a;font-size:13px;font-weight:700}
+.lnk{max-width:100%;padding:8px 12px;border-radius:10px;border:1px solid var(--line);font:600 12.5px ui-monospace,Menlo,Consolas,monospace;word-break:break-all;color:var(--soft)}
+.warn-b{max-width:40ch;padding:9px 12px;border-radius:12px;background:rgba(255,179,71,.14);border:1px solid rgba(255,179,71,.55);font-size:12.5px;line-height:1.45}

@@ -1,0 +1,20 @@
+{
+  "port": 3000,
+  "baseUrl": "https://photo.brunicoffeelab.id",
+  "brand": { "name": "Bruni Coffee Lab", "tagline": "Brew your moment. Frame your vibe." },
+  "paywall": true,
+  "packages": [
+    { "id": "single", "name": "1 Sesi", "sessions": 1, "price": 15000, "note": "1 strip foto" },
+    { "id": "trio", "name": "3 Sesi", "sessions": 3, "price": 40000, "note": "Hemat Rp5.000", "popular": true },
+    { "id": "party", "name": "6 Sesi", "sessions": 6, "price": 75000, "note": "Untuk rombongan" }
+  ],
+  "qris": {
+    "mode": "manual",
+    "staticString": "PASTE_STRING_QRIS_STATIS_MERCHANT_ANDA_DI_SINI",
+    "uniqueCode": true,
+    "expiryMinutes": 10
+  },
+  "token": { "validDays": 30 },
+  "share": { "ttlHours": 24, "maxMb": 12 },
+  "midtrans": { "serverKey": "", "production": false }
+}

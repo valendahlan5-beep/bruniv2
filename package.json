@@ -1,0 +1,1 @@
+{ "name": "bruni-coffee-lab-photobooth", "version": "1.0.0", "private": true, "description": "Photobooth berbayar QRIS untuk Bruni Coffee Lab", "main": "server.js", "scripts": { "start": "node server.js", "test": "node test/api.test.js" }, "engines": { "node": ">=18" } }

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin · Bruni Coffee Lab</title>
+<style>
+:root{--bg:#FBF6EE;--surface:#fff;--elev:#F3EADD;--ink:#2A1B12;--muted:#826B58;--line:#E7DAC8;--accent:#D4915D;--accent2:#8A5A3B;--ok:#1f9d63;--warn:#c27a00;--bad:#d64545;--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#120D0A;--surface:#1F1712;--elev:#2B2018;--ink:#F7EBDD;--muted:#B5A28D;--line:rgba(240,207,166,.16);--ok:#34e39a;--warn:#ffb347;--bad:#ff7a7a}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.5 var(--font)}
+button,input,select{font:inherit;color:inherit}[hidden]{display:none!important}
+.btn{min-height:40px;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-weight:700;font-size:14px;cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--accent)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.pri{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:#fff}
+.btn.ok{background:var(--ok);border-color:transparent;color:#fff}.btn.sm{min-height:32px;padding:4px 12px;font-size:13px}.btn.bad{color:var(--bad)}
+input,select{min-height:42px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);width:100%}
+input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
+#login{min-height:100vh;display:grid;place-items:center;padding:24px}
+.lbox{width:min(360px,100%);padding:28px;border:1px solid var(--line);border-radius:22px;background:var(--surface);text-align:center;box-shadow:0 20px 60px -30px rgba(0,0,0,.4)}
+.lbox h1{margin:0 0 4px;font-size:20px}.lbox p{margin:0 0 18px;color:var(--muted)}.lbox form{display:grid;gap:12px}
+.err{color:var(--bad);font-size:13px;min-height:1.2em;margin:0}
+header{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:12px 20px;background:var(--bg);border-bottom:1px solid var(--line)}
+header h1{margin:0;font-size:16px;letter-spacing:.04em}header h1 small{color:var(--muted);font-weight:600;margin-left:6px}
+nav{display:flex;gap:4px;flex-wrap:wrap}nav button{border:0;background:none;padding:8px 14px;border-radius:999px;font-weight:700;color:var(--muted);cursor:pointer}
+nav button[aria-selected=true]{background:var(--elev);color:var(--ink)}nav .badge{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:99px;background:var(--bad);color:#fff;font-size:12px;line-height:20px}
+.sp{flex:1}main{max-width:1100px;margin:0 auto;padding:20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.card{padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.card small{display:block;color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase}.card b{display:block;margin-top:4px;font-size:26px;letter-spacing:-.02em}.card span{color:var(--muted);font-size:13px}
+.panel{padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--surface);margin-bottom:16px}.panel h2{margin:0 0 12px;font-size:16px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.chips button{border:1px solid var(--line);background:var(--surface);padding:6px 14px;border-radius:99px;font-weight:700;font-size:13px;cursor:pointer}
+.chips button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+.list{display:grid;gap:8px}.row{display:grid;grid-template-columns:1.2fr 1fr auto;gap:8px 14px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.row.pend{border-color:var(--warn);background:linear-gradient(90deg,rgba(255,179,71,.12),transparent)}
+.row b{font-size:15px}.row small{display:block;color:var(--muted)}.amt{font:800 18px var(--font);letter-spacing:-.01em}.amt em{font-style:normal;color:var(--accent)}
+.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:800;background:var(--elev)}.tag.paid,.tag.valid{color:var(--ok)}.tag.pending{color:var(--warn)}.tag.expired,.tag.cancelled,.tag.revoked{color:var(--bad)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+code{font:700 13px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end}.grid2 label{display:grid;gap:4px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:8px 14px;font-size:14px}.kv dt{color:var(--muted);font-weight:700}.kv dd{margin:0;word-break:break-all}
+.note{padding:10px 14px;border-radius:12px;background:var(--elev);font-size:13.5px;margin:10px 0}.note.warn{background:rgba(255,179,71,.15);border:1px solid var(--warn)}
+.bars{display:flex;align-items:flex-end;gap:10px;height:140px;padding-top:10px}.bars div{flex:1;display:grid;align-content:end;justify-items:center;gap:4px;height:100%;font-size:11px;color:var(--muted)}
+.bars i{display:block;width:100%;max-width:46px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,var(--accent),var(--accent2));min-height:3px}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);padding:10px 18px;border-radius:99px;background:var(--ink);color:var(--bg);font-weight:700;opacity:0;pointer-events:none;transition:opacity .25s;z-index:30}#toast.on{opacity:1}
+#printArea{display:none}
+@media print{body>*:not(#printArea){display:none!important}#printArea{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0}.v{border:2px dashed #000;border-radius:10px;padding:16px;text-align:center;color:#000;break-inside:avoid;font-family:system-ui}.v b{display:block;font-size:12px;letter-spacing:.2em}.v code{display:block;margin:10px 0;font-size:22px}.v span{font-size:12px}}
+@media (max-width:640px){.row{grid-template-columns:1fr}.acts{justify-content:flex-start}.kv{grid-template-columns:1fr}main{padding:14px}}
+</style>
+</head>
+<body>
+<div id="login"><div class="lbox"><h1>Bruni Coffee Lab</h1><p>Panel kasir &amp; admin</p><form id="lf"><input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="PIN admin" aria-label="PIN admin" autofocus><p class="err" id="lerr"></p><button class="btn pri" type="submit">Masuk</button></form></div></div>
+
+<div id="app" hidden>
+<header><h1>BRUNI <small>Admin</small></h1>
+<nav id="tabs" role="tablist"><button role="tab" data-t="sum" aria-selected="true">Ringkasan</button><button role="tab" data-t="ord" aria-selected="false">Pesanan<span class="badge" id="pb" hidden>0</span></button><button role="tab" data-t="tok" aria-selected="false">Token &amp; Voucher</button><button role="tab" data-t="set" aria-selected="false">Pengaturan</button></nav>
+<span class="sp"></span><button class="btn sm" id="snd" title="Bunyi saat ada pesanan baru">🔔 Bunyi: aktif</button><button class="btn sm" id="out">Keluar</button></header>
+<main>
+<section id="t-sum"></section>
+<section id="t-ord" hidden></section>
+<section id="t-tok" hidden></section>
+<section id="t-set" hidden></section>
+</main></div>
+<div id="printArea"></div><div id="toast" role="status"></div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const fmt=n=>'Rp'+Number(n||0).toLocaleString('id-ID');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const dt=t=>t?new Date(t).toLocaleString('id-ID',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'-';
+let TOK=null;try{TOK=sessionStorage.getItem('bruni-admin')}catch(e){}
+let tab='sum',filter='pending',sound=true,lastPending=null,info=null,lastVouchers=[];
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('on'),2600)}
+async function api(p,o){
+  o=o||{};o.headers=Object.assign({},o.headers||{},TOK?{Authorization:'Bearer '+TOK}:{});
+  if(o.body&&!(o.body instanceof Blob)){o.headers['Content-Type']='application/json';o.body=JSON.stringify(o.body)}
+  const r=await fetch('api/'+p,o);
+  if(r.status===401&&TOK){logout();throw new Error('Sesi login habis')}
+  if(!r.ok){let j={};try{j=await r.json()}catch(e){}throw new Error(j.error||('Kesalahan '+r.status))}
+  return o.raw?r:r.json();
+}
+function logout(){TOK=null;try{sessionStorage.removeItem('bruni-admin')}catch(e){}$('#app').hidden=true;$('#login').hidden=false;$('#pin').value='';$('#pin').focus()}
+$('#lf').onsubmit=async e=>{e.preventDefault();$('#lerr').textContent='';
+  try{const r=await fetch('api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:$('#pin').value})});const j=await r.json();if(!r.ok)throw new Error(j.error);
+    TOK=j.token;try{sessionStorage.setItem('bruni-admin',TOK)}catch(e){}enter()}catch(er){$('#lerr').textContent=er.message}};
+$('#out').onclick=logout;
+$('#snd').onclick=()=>{sound=!sound;$('#snd').textContent='🔔 Bunyi: '+(sound?'aktif':'mati')};
+let ac=null;function beep(){if(!sound)return;try{ac=ac||new AudioContext();[880,1175].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;g.gain.value=.12;o.connect(g);g.connect(ac.destination);o.start(ac.currentTime+i*.18);o.stop(ac.currentTime+i*.18+.15)})}catch(e){}}
+
+function setTab(t){tab=t;$$('#tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.t===t)));['sum','ord','tok','set'].forEach(k=>$('#t-'+k).hidden=k!==t);load()}
+$$('#tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+
+async function sumView(){
+  const s=await api('admin/summary');info=s.info;const max=Math.max(1,...s.days.map(d=>d.revenue));
+  $('#t-sum').innerHTML=`<div class="cards">
+   <div class="card"><small>Hari ini</small><b>${fmt(s.today.revenue)}</b><span>${s.today.orders} pesanan lunas</span></div>
+   <div class="card"><small>7 hari</small><b>${fmt(s.week.revenue)}</b><span>${s.week.orders} pesanan</span></div>
+   <div class="card"><small>30 hari</small><b>${fmt(s.month.revenue)}</b><span>${s.month.orders} pesanan</span></div>
+   <div class="card"><small>Menunggu bayar</small><b>${s.pending}</b><span>pesanan aktif</span></div>
+   <div class="card"><small>Sesi terjual / terpakai</small><b>${s.sessionsSold} / ${s.sessionsUsed}</b><span>${s.activeShares} tautan unduh aktif</span></div></div>
+  <div class="panel"><h2>Pendapatan 7 hari terakhir</h2><div class="bars">${s.days.map(d=>`<div title="${fmt(d.revenue)} · ${d.orders} pesanan"><span>${d.revenue?fmt(d.revenue).replace('Rp',''):''}</span><i style="height:${Math.round(d.revenue/max*100)}%"></i><span>${new Date(d.day).toLocaleDateString('id-ID',{weekday:'short'})}</span></div>`).join('')}</div></div>
+  ${warnHTML(s.info)}
+  <div class="panel"><h2>Laporan</h2><button class="btn" id="csv">Unduh CSV penjualan</button></div>`;
+  $('#csv').onclick=async()=>{try{const r=await api('admin/export.csv',{raw:true});const b=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='bruni-penjualan.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}catch(e){toast(e.message)}};
+}
+function warnHTML(i){let w='';
+  if(i.paywall&&i.qris.demo&&i.mode!=='midtrans')w+='<div class="note warn"><b>QRIS masih mode DEMO.</b> Isi <code>qris.staticString</code> di config.json dengan string QRIS statis merchant Anda, lalu restart server.'+(i.qris.error?' <br>Galat: '+esc(i.qris.error):'')+'</div>';
+  if(!i.baseUrlSet)w+='<div class="note warn"><b>baseUrl belum diatur.</b> QR unduh foto memakai <code>'+esc(i.baseUrl)+'</code>, hanya terbuka di Wi-Fi yang sama. Isi <code>baseUrl</code> dengan alamat publik HTTPS.</div>';
+  if(i.mode==='manual'&&i.paywall)w+='<div class="note">Mode <b>manual</b>: cocokkan nominal pesanan dengan notifikasi/mutasi QRIS di aplikasi merchant Anda, lalu tekan <b>Terima</b> di tab Pesanan.</div>';
+  return w}
+
+async function ordView(){
+  const q=filter==='all'?'':'?status='+filter;
+  const [{orders},s]=await Promise.all([api('admin/orders'+q),api('admin/summary')]);info=s.info;
+  const pc=s.pending;$('#pb').hidden=!pc;$('#pb').textContent=pc;
+  $('#t-ord').innerHTML=`<div class="chips">${[['pending','Menunggu'],['paid','Lunas'],['all','Semua']].map(([k,l])=>`<button data-f="${k}" aria-pressed="${filter===k}">${l}</button>`).join('')}</div>
+  <div class="list">${orders.length?orders.map(o=>`<div class="row ${o.status==='pending'?'pend':''}"><div><b>${esc(o.pkgName)}</b> · ${o.sessions} sesi <span class="tag ${o.status}">${({pending:'Menunggu',paid:'Lunas',expired:'Kedaluwarsa',cancelled:'Dibatalkan'})[o.status]||o.status}</span>${o.demo?' <span class="tag">DEMO</span>':''}<small>${dt(o.createdAt)} · #${esc(o.id.slice(0,6))}${o.paidAt?' · lunas '+dt(o.paidAt)+' via '+esc(o.paidBy||'-'):''}</small></div>
+   <div class="amt">${fmt(o.amount)}${o.unique?'<small>harga '+fmt(o.price)+' + kode unik <em>'+o.unique+'</em></small>':''}${o.token?'<small><code>'+esc(o.token)+'</code></small>':''}</div>
+   <div class="acts">${o.status==='pending'?`<button class="btn sm ok" data-c="${o.id}" data-a="${o.amount}">Terima</button><button class="btn sm bad" data-x="${o.id}">Batalkan</button>`:o.status==='expired'?`<button class="btn sm" data-c="${o.id}" data-a="${o.amount}">Terima (telat bayar)</button>`:''}</div></div>`).join(''):'<div class="empty">Tidak ada pesanan.</div>'}</div>`;
+  $$('#t-ord [data-f]').forEach(b=>b.onclick=()=>{filter=b.dataset.f;ordView()});
+  $$('#t-ord [data-c]').forEach(b=>b.onclick=async()=>{if(!confirm('Terima pembayaran '+fmt(b.dataset.a)+'?\nPastikan dana sudah masuk di aplikasi merchant.'))return;try{await api('admin/orders/'+b.dataset.c+'/confirm',{method:'POST'});toast('Pembayaran diterima, token dikirim ke layar pelanggan.');ordView()}catch(e){toast(e.message)}});
+  $$('#t-ord [data-x]').forEach(b=>b.onclick=async()=>{if(!confirm('Batalkan pesanan ini?'))return;try{await api('admin/orders/'+b.dataset.x+'/cancel',{method:'POST'});ordView()}catch(e){toast(e.message)}});
+}
+
+async function tokView(){
+  const {tokens}=await api('admin/tokens');
+  $('#t-tok').innerHTML=`<div class="panel"><h2>Buat voucher</h2><p style="margin:0 0 12px;color:var(--muted);font-size:13.5px">Untuk promo, komplimen, atau pembayaran tunai di kasir.</p>
+   <form id="vf" class="grid2"><label>Sesi per voucher<input type="number" id="vs" min="1" max="100" value="1" required></label><label>Jumlah voucher<input type="number" id="vc" min="1" max="100" value="1" required></label><label>Berlaku (hari, 0 = selamanya)<input type="number" id="vd" min="0" max="365" value="30"></label><label>Catatan<input type="text" id="vn" maxlength="60" placeholder="mis. Bayar tunai"></label><button class="btn pri" type="submit">Buat</button></form>
+   <div id="vres"></div></div>
+  <div class="panel"><h2>Semua token (${tokens.length})</h2><div class="list">${tokens.length?tokens.map(t=>`<div class="row"><div><code>${esc(t.code)}</code> <span class="tag ${t.state.valid?'valid':'revoked'}">${t.state.valid?'Aktif':esc(t.state.reason)}</span><small>${t.source==='voucher'?'Voucher':'Pembelian'}${t.note?' · '+esc(t.note):''} · dibuat ${dt(t.createdAt)}${t.expiresAt?' · s/d '+dt(t.expiresAt):''}</small></div><div><b>${t.used}/${t.sessions}</b> sesi terpakai<small>${t.lastUsedAt?'terakhir '+dt(t.lastUsedAt):'belum dipakai'}</small></div><div class="acts"><button class="btn sm" data-add="${esc(t.code)}">+ Sesi</button><button class="btn sm ${t.revoked?'':'bad'}" data-r="${esc(t.code)}" data-v="${t.revoked?'restore':'revoke'}">${t.revoked?'Aktifkan':'Nonaktifkan'}</button></div></div>`).join(''):'<div class="empty">Belum ada token.</div>'}</div></div>`;
+  $('#vf').onsubmit=async e=>{e.preventDefault();try{const r=await api('admin/vouchers',{method:'POST',body:{sessions:+$('#vs').value,count:+$('#vc').value,validDays:+$('#vd').value,note:$('#vn').value}});lastVouchers=r.tokens;toast(r.tokens.length+' voucher dibuat');await tokView();showVouchers()}catch(er){toast(er.message)}};
+  $$('#t-tok [data-add]').forEach(b=>b.onclick=async()=>{const n=prompt('Tambah berapa sesi untuk '+b.dataset.add+'?','1');if(!n)return;try{await api('admin/tokens/'+b.dataset.add+'/add',{method:'POST',body:{sessions:+n}});tokView()}catch(e){toast(e.message)}});
+  $$('#t-tok [data-r]').forEach(b=>b.onclick=async()=>{try{await api('admin/tokens/'+b.dataset.r+'/'+b.dataset.v,{method:'POST'});tokView()}catch(e){toast(e.message)}});
+  if(lastVouchers.length)showVouchers();
+}
+function showVouchers(){if(!lastVouchers.length)return;const box=$('#vres');if(!box)return;
+  box.innerHTML='<div class="note"><b>Voucher baru</b> (hanya ditampilkan di sesi ini): '+lastVouchers.map(t=>'<code>'+esc(t.code)+'</code>').join(' · ')+'<br><button class="btn sm" id="prt" style="margin-top:8px">Cetak voucher</button></div>';
+  $('#prt').onclick=()=>{$('#printArea').innerHTML=lastVouchers.map(t=>`<div class="v"><b>BRUNI COFFEE LAB</b><span>Photobooth · ${t.sessions} sesi</span><code>${esc(t.code)}</code><span>Masukkan kode di layar photobooth${t.expiresAt?'<br>Berlaku s/d '+new Date(t.expiresAt).toLocaleDateString('id-ID'):''}</span></div>`).join('');window.print()}}
+
+async function setView(){
+  const s=await api('admin/summary'),i=s.info;
+  $('#t-set').innerHTML=`${warnHTML(i)}<div class="panel"><h2>Konfigurasi aktif</h2><dl class="kv">
+   <dt>Merek</dt><dd>${esc(i.brand)}</dd><dt>Mode bayar</dt><dd>${i.paywall?'Berbayar':'Gratis (paywall nonaktif)'} · QRIS <b>${esc(i.mode)}</b></dd>
+   <dt>QRIS merchant</dt><dd>${i.qris.configured?esc(i.qris.merchant)+' · '+esc(i.qris.city):'<b>DEMO</b> (belum diatur)'}</dd>
+   <dt>Alamat tautan unduh</dt><dd>${esc(i.baseUrl)}</dd><dt>Masa aktif tautan</dt><dd>${i.shareTtlHours} jam</dd>
+   <dt>Webhook pembayaran</dt><dd>${esc(i.webhook)}<br><small style="color:var(--muted)">POST JSON {order_id, status:"paid", amount, ref} + header X-Signature = HMAC-SHA256(body, webhookSecret). Secret ada di data/secrets.json.</small></dd>
+   <dt>Webhook Midtrans</dt><dd>${esc(i.midtransWebhook)}</dd></dl></div>
+  <div class="panel"><h2>Paket</h2><div class="list">${i.packages.map(p=>`<div class="row"><div><b>${esc(p.name)}</b>${p.popular?' <span class="tag">Populer</span>':''}<small>${esc(p.note||'')}</small></div><div class="amt">${fmt(p.price)}</div><div>${p.sessions} sesi</div></div>`).join('')}</div><p class="note">Ubah harga/paket di <code>config.json</code> lalu restart server.</p></div>`;
+}
+async function load(){try{({sum:sumView,ord:ordView,tok:tokView,set:setView})[tab]()}catch(e){toast(e.message)}}
+async function poll(){ // pantau pesanan baru → bunyi
+  if(document.hidden||!TOK)return;
+  try{const s=await api('admin/summary');$('#pb').hidden=!s.pending;$('#pb').textContent=s.pending;
+    if(lastPending!==null&&s.pending>lastPending){beep();toast('Pesanan baru menunggu pembayaran');document.title='(!) Admin · Bruni'; if(tab==='ord')ordView()}
+    else if(s.pending===0)document.title='Admin · Bruni Coffee Lab';
+    lastPending=s.pending;if(tab==='ord'&&!document.hidden)ordView()}catch(e){}
+}
+function enter(){$('#login').hidden=true;$('#app').hidden=false;lastPending=null;setTab(tab);poll()}
+setInterval(poll,4000);
+if(TOK)api('admin/summary').then(enter).catch(logout);else $('#pin').focus();
+})();
+</script>
+</body>
+</html>
