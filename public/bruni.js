@@ -223,6 +223,7 @@
     try { B.cfg = await api('config'); } catch (e) { B.cfg = null; }
     if (B.cfg) {
       if (B.cfg.brand && B.cfg.brand.name) { BRAND = B.cfg.brand.name; render(); }
+      if (B.cfg.defaultSecs && typeof setState === 'function') setState({ secs: B.cfg.defaultSecs });
       const oid = ls.get(LSO);
       if (oid) {
         try {

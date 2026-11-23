@@ -47,6 +47,8 @@ code{font:700 13px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
 #printArea{display:none}
 @media print{body>*:not(#printArea){display:none!important}#printArea{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0}.v{border:2px dashed #000;border-radius:10px;padding:16px;text-align:center;color:#000;break-inside:avoid;font-family:system-ui}.v b{display:block;font-size:12px;letter-spacing:.2em}.v code{display:block;margin:10px 0;font-size:22px}.v span{font-size:12px}}
 @media (max-width:640px){.row{grid-template-columns:1fr}.acts{justify-content:flex-start}.kv{grid-template-columns:1fr}main{padding:14px}}
+.pk input:not([type=checkbox]),#bsf input:not([type=checkbox]),#bsf select{min-height:38px;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;width:100%;box-sizing:border-box}
+@media(max-width:720px){.pk.row{grid-template-columns:1fr 1fr!important}}
 </style>
 </head>
 <body>
@@ -148,7 +150,44 @@ async function setView(){
    <dt>Alamat tautan unduh</dt><dd>${esc(i.baseUrl)}</dd><dt>Masa aktif tautan</dt><dd>${i.shareTtlHours} jam</dd>
    <dt>Webhook pembayaran</dt><dd>${esc(i.webhook)}<br><small style="color:var(--muted)">POST JSON {order_id, status:"paid", amount, ref} + header X-Signature = HMAC-SHA256(body, webhookSecret). Secret ada di data/secrets.json.</small></dd>
    <dt>Webhook Midtrans</dt><dd>${esc(i.midtransWebhook)}</dd></dl></div>
-  <div class="panel"><h2>Paket</h2><div class="list">${i.packages.map(p=>`<div class="row"><div><b>${esc(p.name)}</b>${p.popular?' <span class="tag">Populer</span>':''}<small>${esc(p.note||'')}</small></div><div class="amt">${fmt(p.price)}</div><div>${p.sessions} sesi</div></div>`).join('')}</div><p class="note">Ubah harga/paket di <code>config.json</code> lalu restart server.</p></div>`;
+  <div id="boothset"></div>`;
+  boothSettings(i);
+}
+
+let bsTok=0;
+async function boothSettings(i){
+  const my=++bsTok;
+  const S=await api('admin/settings');
+  const box=$('#boothset');if(!box||my!==bsTok)return;   // abaikan render usang (tab diklik cepat)
+  const kioskUrl=i.baseUrl.replace(/\/+$/,'')+'/?kiosk=1';
+  const rowH=p=>`<div class="pk row" style="grid-template-columns:2fr 70px 110px 1.4fr auto auto">
+    <input class="f-name" maxlength="30" placeholder="Nama paket" value="${esc(p.name||'')}" data-id="${esc(p.id||'')}">
+    <input class="f-ses" type="number" min="1" max="100" placeholder="Sesi" value="${p.sessions||1}" title="Jumlah sesi">
+    <input class="f-pr" type="number" min="1000" step="500" placeholder="Harga" value="${p.price||''}" title="Harga (Rp)">
+    <input class="f-note" maxlength="40" placeholder="Catatan (opsional)" value="${esc(p.note||'')}">
+    <label style="display:flex;gap:4px;align-items:center;font-size:12.5px"><input class="f-pop" type="checkbox" ${p.popular?'checked':''}>Populer</label>
+    <button type="button" class="btn sm bad f-del">Hapus</button></div>`;
+  box.innerHTML=`<div class="panel"><h2>Pengaturan booth</h2>
+   <form id="bsf"><div class="grid2">
+    <label>Nama brand<input id="bs-name" maxlength="40" value="${esc(S.brand.name)}" required></label>
+    <label>Tagline<input id="bs-tag" maxlength="80" value="${esc(S.brand.tagline||'')}"></label>
+    <label>Hitung mundur bawaan<select id="bs-secs">${S.secsOptions.map(n=>`<option value="${n}" ${n===S.defaultSecs?'selected':''}>${n} detik</option>`).join('')}</select></label>
+    <label>Reset otomatis kiosk (detik, 0 = mati)<input id="bs-idle" type="number" min="0" max="900" value="${S.idleSeconds}"></label></div>
+   <h2 style="margin-top:18px">Paket &amp; harga</h2><div class="list" id="bs-pk">${S.packages.map(rowH).join('')}</div>
+   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" class="btn sm" id="bs-add">+ Tambah paket</button><button class="btn pri" type="submit">Simpan pengaturan</button></div>
+   <p class="note" style="margin-bottom:0">Perubahan langsung berlaku di layar booth setelah halamannya dimuat ulang. Pesanan yang sudah dibuat tidak berubah.</p></form></div>
+  <div class="panel"><h2>Mode kiosk</h2>
+   <p style="margin:0 0 10px;font-size:13.5px">Buka alamat ini di perangkat photobooth. Layar penuh, tanpa halaman promosi, dan kembali ke awal otomatis kalau ditinggal pelanggan.</p>
+   <div class="note" style="word-break:break-all"><code>${esc(kioskUrl)}</code></div>
+   <button type="button" class="btn sm" id="bs-cp">Salin alamat kiosk</button></div>`;
+  const list=box.querySelector('#bs-pk');
+  const bind=()=>$$('#bs-pk .f-del').forEach(b=>b.onclick=()=>{if($$('#bs-pk .pk').length<=1)return toast('Minimal 1 paket');b.closest('.pk').remove()});
+  bind();
+  $('#bs-add').onclick=()=>{if($$('#bs-pk .pk').length>=6)return toast('Maksimal 6 paket');list.insertAdjacentHTML('beforeend',rowH({sessions:1}));bind()};
+  $('#bs-cp').onclick=()=>navigator.clipboard&&navigator.clipboard.writeText(kioskUrl).then(()=>toast('Alamat kiosk disalin'),()=>{});
+  $('#bsf').onsubmit=async e=>{e.preventDefault();
+    const packages=$$('#bs-pk .pk').map(r=>({id:r.querySelector('.f-name').dataset.id,name:r.querySelector('.f-name').value,sessions:r.querySelector('.f-ses').value,price:r.querySelector('.f-pr').value,note:r.querySelector('.f-note').value,popular:r.querySelector('.f-pop').checked}));
+    try{await api('admin/settings',{method:'POST',body:{brand:{name:$('#bs-name').value,tagline:$('#bs-tag').value},packages,defaultSecs:+$('#bs-secs').value,idleSeconds:+$('#bs-idle').value||0}});toast('Pengaturan disimpan');setView()}catch(er){toast(er.message)}};
 }
 async function load(){try{({sum:sumView,ord:ordView,tok:tokView,set:setView})[tab]()}catch(e){toast(e.message)}}
 async function poll(){ // pantau pesanan baru → bunyi

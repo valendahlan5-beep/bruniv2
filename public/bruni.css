@@ -55,3 +55,15 @@ code.tk{font:800 13px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.08em
 .errl{margin:0;min-height:1.3em;color:#ff7a7a;font-size:13px;font-weight:700}
 .lnk{max-width:100%;padding:8px 12px;border-radius:10px;border:1px solid var(--line);font:600 12.5px ui-monospace,Menlo,Consolas,monospace;word-break:break-all;color:var(--soft)}
 .warn-b{max-width:40ch;padding:9px 12px;border-radius:12px;background:rgba(255,179,71,.14);border:1px solid rgba(255,179,71,.55);font-size:12.5px;line-height:1.45}
+
+/* ---- Mode kiosk (?kiosk=1) ---- */
+html.kiosk .site-nav,html.kiosk .hero,html.kiosk .lp-sec,html.kiosk .site-foot,html.kiosk .studio-head,html.kiosk #cover{display:none!important}
+html.kiosk,html.kiosk body{overscroll-behavior:none;touch-action:manipulation;-webkit-touch-callout:none}
+html.kiosk body{-webkit-user-select:none;user-select:none}
+html.kiosk input,html.kiosk textarea{-webkit-user-select:text;user-select:text}
+.kiosk-gate{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;text-align:center;background:rgba(18,13,10,.94);color:#f8e6d2;cursor:pointer}
+.kiosk-gate[hidden],.kiosk-warn[hidden]{display:none}
+.kiosk-gate b{display:block;font-size:clamp(24px,5vw,40px);font-weight:800}
+.kiosk-gate small{display:block;margin-top:10px;opacity:.7;font-size:15px}
+.kiosk-warn{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:99998;padding:14px 22px;border-radius:16px;background:#2a1a12;color:#f8e6d2;border:1px solid #d4915d;text-align:center;box-shadow:0 16px 48px rgba(0,0,0,.5)}
+.kiosk-warn b{display:block;font-size:17px}.kiosk-warn small{display:block;margin-top:2px;opacity:.75}
