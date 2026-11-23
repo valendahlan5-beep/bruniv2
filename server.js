@@ -37,7 +37,8 @@ const DEFAULTS = {
   share: { ttlHours: 24, maxMb: 12 },
   adminPin: '',                      // kosong = dibuat acak saat pertama jalan
   webhookSecret: '',                 // kosong = dibuat acak saat pertama jalan
-  midtrans: { serverKey: '', production: false }
+  midtrans: { serverKey: '', production: false },
+  ui: { defaultSecs: 3, idleSeconds: 90 }   // hitung mundur bawaan (detik) & reset otomatis mode kiosk (0 = mati)
 };
 const isObj = v => v && typeof v === 'object' && !Array.isArray(v);
 const merge = (a, b) => { const o = { ...a }; for (const k in b) o[k] = isObj(a[k]) && isObj(b[k]) ? merge(a[k], b[k]) : b[k]; return o; };
@@ -266,6 +267,7 @@ const route = (method, re, fn) => routes.push({ method, re, fn });
 
 route('GET', /^\/api\/config$/, async (req, res) => json(res, 200, {
   brand: cfg.brand, paywall: cfg.paywall, currency: 'IDR', packages: cfg.packages, qrisMode: cfg.qris.mode,
+  defaultSecs: cfg.ui.defaultSecs, kiosk: { idleSeconds: cfg.ui.idleSeconds },
   demo: cfg.paywall && qrisInfo.demo && cfg.qris.mode !== 'midtrans', shareTtlHours: cfg.share.ttlHours, expiryMinutes: cfg.qris.expiryMinutes
 }));
 
@@ -427,7 +429,7 @@ route('GET', /^\/api\/admin\/summary$/, async (req, res) => {
     pending: Object.values(db.orders).filter(o => o.status === 'pending').length,
     sessionsSold: toks.reduce((a, t) => a + t.sessions, 0), sessionsUsed: toks.reduce((a, t) => a + t.used, 0),
     activeShares: Object.values(db.shares).filter(s => s.expiresAt > now()).length, days,
-    info: { mode: cfg.qris.mode, qris: qrisInfo, paywall: cfg.paywall, baseUrl: baseUrl(req), baseUrlSet: !!cfg.baseUrl, webhook: baseUrl(req) + '/api/webhook/payment', midtransWebhook: baseUrl(req) + '/api/webhook/midtrans', brand: cfg.brand.name, packages: cfg.packages, shareTtlHours: cfg.share.ttlHours }
+    info: { mode: cfg.qris.mode, qris: qrisInfo, paywall: cfg.paywall, baseUrl: baseUrl(req), baseUrlSet: !!cfg.baseUrl, webhook: baseUrl(req) + '/api/webhook/payment', midtransWebhook: baseUrl(req) + '/api/webhook/midtrans', brand: cfg.brand.name, packages: cfg.packages, ui: cfg.ui, shareTtlHours: cfg.share.ttlHours }
   });
 });
 route('GET', /^\/api\/admin\/orders$/, async (req, res, m, url) => {
@@ -473,6 +475,46 @@ route('GET', /^\/api\/admin\/export\.csv$/, async (req, res) => {
   const rows = [['id', 'status', 'paket', 'sesi', 'harga', 'nominal_bayar', 'kode_unik', 'dibuat', 'dibayar', 'via', 'token']];
   Object.values(db.orders).sort((a, b) => a.createdAt - b.createdAt).forEach(r => rows.push([r.id, r.status, r.pkgName, r.sessions, r.price, r.amount, r.unique, iso(r.createdAt), iso(r.paidAt), r.paidBy || '', r.token || '']));
   send(res, 200, '﻿' + rows.map(r => r.map(q).join(',')).join('\r\n'), { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="bruni-penjualan.csv"', 'Cache-Control': 'no-store' });
+});
+
+/* ---------- Pengaturan booth (disimpan di data/settings.json, menimpa config.json) ---------- */
+const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json');
+const SECS_OPTIONS = [3, 5, 10];
+const intIn = (v, min, max, label) => { const n = Math.floor(+v); if (!(n >= min && n <= max)) throw httpErr(400, label + ' harus ' + min.toLocaleString('id-ID') + '–' + max.toLocaleString('id-ID')); return n; };
+const txt = (v, max, label, req) => { const t = String(v == null ? '' : v).replace(/[\u0000-\u001f<>]/g, '').trim(); if (req && !t) throw httpErr(400, label + ' wajib diisi'); if (t.length > max) throw httpErr(400, label + ' maksimal ' + max + ' karakter'); return t; };
+function cleanSettings(b) {
+  const brand = { name: txt(b.brand && b.brand.name, 40, 'Nama brand', true), tagline: txt(b.brand && b.brand.tagline, 80, 'Tagline') };
+  if (!Array.isArray(b.packages) || b.packages.length < 1 || b.packages.length > 6) throw httpErr(400, 'Jumlah paket 1–6');
+  const seen = new Set();
+  const packages = b.packages.map((p, i) => {
+    let id = String((p && p.id) || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 20) || ('paket' + (i + 1));
+    while (seen.has(id)) id += 'x';
+    seen.add(id);
+    const out = { id, name: txt(p.name, 30, 'Nama paket', true), sessions: intIn(p.sessions, 1, 100, 'Jumlah sesi'), price: intIn(p.price, 1000, 10000000, 'Harga') };
+    const note = txt(p.note, 40, 'Catatan paket'); if (note) out.note = note;
+    if (p.popular) out.popular = true;
+    return out;
+  });
+  const defaultSecs = Math.floor(+b.defaultSecs);
+  if (!SECS_OPTIONS.includes(defaultSecs)) throw httpErr(400, 'Hitung mundur harus ' + SECS_OPTIONS.join(', ') + ' detik');
+  const idleSeconds = Math.floor(+b.idleSeconds || 0);
+  if (idleSeconds !== 0 && !(idleSeconds >= 20 && idleSeconds <= 900)) throw httpErr(400, 'Reset otomatis: 0 (mati) atau 20–900 detik');
+  return { brand, packages, defaultSecs, idleSeconds };
+}
+function applySettings(s) {
+  cfg.brand = { ...cfg.brand, ...s.brand };
+  cfg.packages = s.packages;
+  cfg.ui = { defaultSecs: s.defaultSecs, idleSeconds: s.idleSeconds };
+}
+const currentSettings = () => ({ brand: cfg.brand, packages: cfg.packages, defaultSecs: cfg.ui.defaultSecs, idleSeconds: cfg.ui.idleSeconds });
+try { applySettings(cleanSettings(JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8')))); } catch (e) { if (e.code !== 'ENOENT') console.error('⚠ settings.json diabaikan:', e.message); }
+route('GET', /^\/api\/admin\/settings$/, async (req, res) => { adminAuth(req); json(res, 200, { ...currentSettings(), secsOptions: SECS_OPTIONS }); });
+route('POST', /^\/api\/admin\/settings$/, async (req, res) => {
+  adminAuth(req);
+  const s = cleanSettings(await readJSON(req));
+  const tmp = SETTINGS_FILE + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(s, null, 2)); fs.renameSync(tmp, SETTINGS_FILE);
+  applySettings(s); json(res, 200, { ok: true, ...currentSettings() });
 });
 
 /* ---------------- Static ---------------- */
