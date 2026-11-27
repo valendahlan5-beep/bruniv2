@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Admin · Bruni Coffee Lab</title>
 <style>
-:root{--bg:#FBF6EE;--surface:#fff;--elev:#F3EADD;--ink:#2A1B12;--muted:#826B58;--line:#E7DAC8;--accent:#D4915D;--accent2:#8A5A3B;--ok:#1f9d63;--warn:#c27a00;--bad:#d64545;--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+:root{--bg:#FBF6EE;--surface:#fff;--elev:#F3EADD;--ink:#2A1B12;--muted:#826B58;--line:#E7DAC8;--accent:#FF4F00;--accent2:#C23A00;--ok:#1f9d63;--warn:#c27a00;--bad:#d64545;--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 @media (prefers-color-scheme:dark){:root{--bg:#120D0A;--surface:#1F1712;--elev:#2B2018;--ink:#F7EBDD;--muted:#B5A28D;--line:rgba(240,207,166,.16);--ok:#34e39a;--warn:#ffb347;--bad:#ff7a7a}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.5 var(--font)}
 button,input,select{font:inherit;color:inherit}[hidden]{display:none!important}
@@ -23,7 +23,7 @@ input:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px}
 header{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:12px 20px;background:var(--bg);border-bottom:1px solid var(--line)}
 header h1{margin:0;font-size:16px;letter-spacing:.04em}header h1 small{color:var(--muted);font-weight:600;margin-left:6px}
 nav{display:flex;gap:4px;flex-wrap:wrap}nav button{border:0;background:none;padding:8px 14px;border-radius:999px;font-weight:700;color:var(--muted);cursor:pointer}
-nav button[aria-selected=true]{background:var(--elev);color:var(--ink)}nav .badge{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:99px;background:var(--bad);color:#fff;font-size:12px;line-height:20px}
+nav button[aria-selected=true]{background:#FFE6D9;color:#C23A00}nav .badge{display:inline-block;min-width:20px;margin-left:6px;padding:0 6px;border-radius:99px;background:var(--bad);color:#fff;font-size:12px;line-height:20px}
 .sp{flex:1}main{max-width:1100px;margin:0 auto;padding:20px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
 .card{padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
@@ -52,10 +52,10 @@ code{font:700 13px ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
 </style>
 </head>
 <body>
-<div id="login"><div class="lbox"><h1>Bruni Coffee Lab</h1><p>Panel kasir &amp; admin</p><form id="lf"><input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="PIN admin" aria-label="PIN admin" autofocus><p class="err" id="lerr"></p><button class="btn pri" type="submit">Masuk</button></form></div></div>
+<div id="login"><div class="lbox"><h1><img src="/bruni-logo.png" alt="Bruni Coffee Lab" style="height:64px;width:auto;display:block;margin:0 auto 6px"></h1><p>Panel kasir &amp; admin</p><form id="lf"><input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="PIN admin" aria-label="PIN admin" autofocus><p class="err" id="lerr"></p><button class="btn pri" type="submit">Masuk</button></form></div></div>
 
 <div id="app" hidden>
-<header><h1>BRUNI <small>Admin</small></h1>
+<header><h1><img src="/bruni-logo.png" alt="Bruni Coffee Lab" style="height:34px;width:auto;vertical-align:middle"> <small>Admin</small></h1>
 <nav id="tabs" role="tablist"><button role="tab" data-t="sum" aria-selected="true">Ringkasan</button><button role="tab" data-t="ord" aria-selected="false">Pesanan<span class="badge" id="pb" hidden>0</span></button><button role="tab" data-t="tok" aria-selected="false">Token &amp; Voucher</button><button role="tab" data-t="set" aria-selected="false">Pengaturan</button></nav>
 <span class="sp"></span><button class="btn sm" id="snd" title="Bunyi saat ada pesanan baru">🔔 Bunyi: aktif</button><button class="btn sm" id="out">Keluar</button></header>
 <main>
